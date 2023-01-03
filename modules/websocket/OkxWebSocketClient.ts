@@ -31,16 +31,15 @@ export default class OkxWebSocketClient {
 
   private subscribes = new Map<string, ISubscribes>();
 
-  private _isSocketOpened = false;
+  private isSocketOpened = false;
+
+  private setIsSocketOpened: (value: boolean) => void;
 
   private endpoint = "wss://ws.okx.com:8443/ws/v5/public";
 
-  get isSocketOpened() {
-    return this._isSocketOpened;
-  }
-
-  constructor(endpoint?: string) {
+  constructor(setIsSocketOpened: (value: boolean) => void, endpoint?: string) {
     if (endpoint) this.endpoint = endpoint;
+    this.setIsSocketOpened = setIsSocketOpened;
   }
 
   init() {
@@ -65,7 +64,7 @@ export default class OkxWebSocketClient {
       this.subscribes.set(payload.channel, { callbacks: [callback], payload });
     }
 
-    if (this._isSocketOpened) {
+    if (this.isSocketOpened) {
       this.webSocket.send(
         JSON.stringify({
           op: "subscribe",
@@ -78,7 +77,7 @@ export default class OkxWebSocketClient {
   unsubscribe({ payload }: IUnsubscribeProps) {
     this.subscribes.delete(payload.channel);
 
-    if (this._isSocketOpened) {
+    if (this.isSocketOpened) {
       this.webSocket.send(
         JSON.stringify({
           op: "unsubscribe",
@@ -102,7 +101,7 @@ export default class OkxWebSocketClient {
   }
 
   private sendPing() {
-    if (this._isSocketOpened) this.webSocket.send("ping");
+    if (this.isSocketOpened) this.webSocket.send("ping");
   }
 
   private stopHeartbeat() {
@@ -124,12 +123,16 @@ export default class OkxWebSocketClient {
         () => this.heartbeat(),
         this.pingInterval
       );
-      this._isSocketOpened = true;
+
+      this.isSocketOpened = true;
+      this.setIsSocketOpened(true);
+
       this.resubscribe();
     });
 
     this.webSocket.addEventListener("close", () => {
-      this._isSocketOpened = false;
+      this.isSocketOpened = false;
+      this.setIsSocketOpened(false);
       this.stopHeartbeat();
     });
 

@@ -7,7 +7,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>WebSocket no React</title>
+        <title>WebSockets no React</title>
       </Head>
       <SocketContextProvider>
         <Component {...pageProps} />

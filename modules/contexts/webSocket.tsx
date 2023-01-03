@@ -9,8 +9,8 @@ import {
 import OkxWebSocketClient from "../websocket/OkxWebSocketClient";
 
 interface IWebSocketContext {
-  isSocketOpened: boolean;
   okxSocket: OkxWebSocketClient;
+  isSocketOpened: boolean;
 }
 
 interface Props {
@@ -20,7 +20,9 @@ interface Props {
 const SocketContext = createContext({} as IWebSocketContext);
 
 export const SocketContextProvider = ({ children }: Props) => {
-  const okxSocket = useMemo(() => new OkxWebSocketClient(), []);
+  const [isSocketOpened, setIsSocketOpened] = useState(false);
+
+  const okxSocket = useMemo(() => new OkxWebSocketClient(setIsSocketOpened), []);
 
   useEffect(() => {
     okxSocket.init();
@@ -45,10 +47,10 @@ export const SocketContextProvider = ({ children }: Props) => {
 
   const data = useMemo(
     () => ({
-      isSocketOpened: okxSocket.isSocketOpened,
+      isSocketOpened,
       okxSocket,
     }),
-    [okxSocket]
+    [okxSocket, isSocketOpened]
   );
 
   return (
