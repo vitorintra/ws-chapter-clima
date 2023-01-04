@@ -64,7 +64,7 @@ export default class OkxWebSocketClient {
       this.subscribes.set(payload.channel, { callbacks: [callback], payload });
     }
 
-    if (this.isSocketOpened) {
+    if (this.isSocketOpened && this.webSocket.readyState === 1) {
       this.webSocket.send(
         JSON.stringify({
           op: "subscribe",
